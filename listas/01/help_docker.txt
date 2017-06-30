@@ -1,0 +1,18 @@
+https://www.digitalocean.com/community/tutorials/como-instalar-e-usar-o-docker-no-ubuntu-16-04-pt
+
+
+
+# List the images
+sudo docker images
+
+# List the containers
+sudo docker ps -a
+
+# Run a specific image
+sudo docker run -it 359bca8ca7e6 /bin/bash
+
+# Commit the docker
+docker commit -m "Docker for Data Science" -a "rmmariano" b6b5396e92af rmmariano/jupyter_datascience_notebook
+
+# Push to repository
+docker push rmmariano/jupyter_datascience_notebook
