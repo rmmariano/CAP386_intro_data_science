@@ -1,0 +1,22 @@
+rainfall <- c(3.47,	3.02,	3.93,	3.00,	3.89,	3.43,	3.85,	3.74,	3.98,	3.16,	3.12,	3.35)
+
+months <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+names(rainfall) <- months
+
+print(rainfall)
+
+
+millimeters_rainfall = rainfall * 25.4
+
+
+print("millimeters rainfall")
+print(millimeters_rainfall)
+
+print("average")
+print(mean(millimeters_rainfall))
+
+print("min")
+print(min(millimeters_rainfall))
+
+print("max")
+print(max(millimeters_rainfall))

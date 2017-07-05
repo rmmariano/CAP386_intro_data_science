@@ -1,0 +1,7 @@
+ID container: 0c295b01d957
+
+
+docker commit -m "Install NodeJS" -a "rmmariano" 0c295b01d957 rmmariano/img_ubuntu_00
+
+
+docker push rmmariano/img_ubuntu_00
