@@ -1,0 +1,173 @@
+---
+title: "Tidy Data Example: Hot Dogs in Baltimore"
+output:   
+  github_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Reading Data
+
+Do the download of the CSV data from https://data.baltimorecity.gov/dataset/Food-Vendor-Locations/bqw3-z52q/data
+
+```{r}
+vendors <- "https://data.baltimorecity.gov/api/views/bqw3-z52q/rows.csv?accessType=DOWNLOAD"
+
+download.file(vendors, destfile = "../TempData/BFood.csv", method="curl")
+
+if (file.exists("../TempData/BFood.csv")) {
+  tam <- file.info("../TempData/BFood.csv")$size
+  paste("File downloaded, ",tam," bytes")
+} else {
+  "Error downloading file!"
+}
+```
+
+Read the CSV keeping the same header:
+
+```{r}
+# Let's live dangerously.
+bVendors <- read.csv(file="../TempData/BFood.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
+
+str(bVendors)
+```
+
+
+## Selecting Variables and Creating Factors
+
+Remove the column <tt>Id</tt> and tranform the <tt>LicenseNum</tt> column in a factor from <tt>bVendors</tt>:
+
+```{r}
+bVendors$Id <- NULL
+bVendors$LicenseNum <- as.factor(bVendors$LicenseNum)
+```
+
+<tt>bVendors$St</tt> looks suspicious... let's check it:
+
+```{r}
+bVendors$St <- as.factor(bVendors$St)
+str(bVendors$St)
+
+bVendors$St <- NULL
+```
+
+The name for variable <tt>Location.1</tt> is ugly, so change to <tt>location</tt>:
+
+```{r}
+names(bVendors)[names(bVendors) == "Location.1"] <- "location"
+str(bVendors)
+```
+
+
+## Parsing Location
+
+```{r}
+oneLoc <- "Towson 21204\n(39.28540000000, -76.62260000000)"
+```
+
+<tt>strsplit</tt> returns a matrix, so compact in a vector with <tt>unlist</tt>:
+
+```{r}
+locV1 <- unlist(strsplit(oneLoc, "\n"))
+
+locV1
+
+latLong <- locV1[2]
+latLongS <- unlist(strsplit(locV1[2], ","))
+
+latLongS
+
+lat <- as.numeric(gsub("^.",'', latLongS[1]))
+long <- as.numeric(gsub(".$",'', latLongS[2]))
+
+lat
+long
+```
+
+That was truly horrible. Let's try another way:
+
+```{r}
+oneLoc <- "Towson 21204\n(39.28540000000, -76.62260000000)"
+
+tempS <- unlist(regmatches(oneLoc,gregexpr("[0-9.]+", oneLoc)))
+
+tempS
+```
+
+```{r}
+lat <- as.numeric(tempS[2])
+long <- as.numeric(tempS[3])
+```
+
+```{r}
+paste("lat =", lat, " long = ", long)
+```
+
+Now for the whole dataframe:
+
+```{r}
+tempS <- regmatches(bVendors$location, gregexpr("[0-9.]+", bVendors$location))
+
+lats <- vector(length = nrow(bVendors), mode = "numeric")
+longs <- vector(length = nrow(bVendors), mode = "numeric")
+
+for(i in 1:nrow(bVendors)) {
+  lats[i] <- as.numeric(tempS[[i]][2])
+  longs[i] <- as.numeric(tempS[[i]][3])
+}
+
+bVendors$lat <- lats
+bVendors$long <- longs
+
+str(bVendors)
+```
+
+Worried about the values shown? Don't be. 
+<tt>subset</tt> function create a subset of the <tt>bVendors</tt> only with the columns: <tt>location</tt>, <tt>lat</tt> and <tt>long</tt>.
+<tt>head</tt> function will show only the six first rows:
+
+```{r}
+head(subset(bVendors, select = c(location, lat, long)))
+```
+
+
+## Now for the exercises!
+
+```{r}
+bVendors$hotdog <- grepl("Hot dog", bVendors$ItemsSold)
+
+head(subset(bVendors, select = c(ItemsSold, hotdog)))
+```
+
+## R Exercises	
+
+* I want to get all variations of "hot dog", including "frank". 
+With <tt>ignore.case</tt> we will get all cases that match with "hot dog" or "frank" in both cases (lower or upper):
+  
+```{r}
+bVendors$hotdog <- grepl("hot dog|frank", bVendors$ItemsSold, ignore.case = TRUE)
+
+head(subset(bVendors, select = c(ItemsSold, hotdog)))
+```
+
+
+* Now I want to get all variations of "pizza":
+  
+```{r}
+bVendors$pizza <- grepl("pizza", bVendors$ItemsSold, ignore.case = TRUE)
+
+head(subset(bVendors, select = c(ItemsSold, pizza)))
+```
+
+
+
+
+
+
+
+
