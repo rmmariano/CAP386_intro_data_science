@@ -144,6 +144,7 @@ bVendors$hotdog <- grepl("Hot dog", bVendors$ItemsSold)
 head(subset(bVendors, select = c(ItemsSold, hotdog)))
 ```
 
+
 ## R Exercises	
 
 * I want to get all variations of "hot dog", including "frank". 
@@ -164,10 +165,133 @@ bVendors$pizza <- grepl("pizza", bVendors$ItemsSold, ignore.case = TRUE)
 head(subset(bVendors, select = c(ItemsSold, pizza)))
 ```
 
+* Given a location, we want to extract the name of the town, so first we split the location, getting the part before the <tt>\\n</tt>:
+
+```{r}
+#one_location <- "Towson 21204\n(39.28540000000, -76.62260000000)"
+one_location <- "Owings Mill 21117\n(39.29860000000, -76.61280000000)"
+
+location_vector <- unlist(strsplit(one_location, "\n"))
+
+location_vector
+```
+
+Getting the name of the town and zip code:
+
+```{r}
+city_and_zip_code <- location_vector[1]
+
+city_and_zip_code
+```
+
+We want to separate both, so first we split it by white space and convert to list:
+
+```{r}
+city_and_zip_code_char <- unlist(strsplit(city_and_zip_code, " "))
+
+city_and_zip_code_char
+
+city_and_zip_code_list = as.vector(city_and_zip_code_char, mode="list") 
+
+city_and_zip_code_list
+
+```
+
+So get the last index of the list:
+
+```{r}
+last_index = length(city_and_zip_code_list)
+
+last_index
+```
+
+With this index, now we can separate the name of the city and the zip code, where the zip code is the last position and the name of the town is the rest:
+
+```{r}
+zip_code = city_and_zip_code_list[last_index]
+
+# zip_code is a list with one string, so we join it in a string
+zip_code = paste(zip_code, collapse = '')
+
+# remove the zip code of the list
+city_and_zip_code_list[last_index] <- NULL
+
+name_town = city_and_zip_code_list
+
+name_town
+
+zip_code
+```
+
+If the name of the town have more than one word, so we need to assemble them again:
+
+```{r}
+name_town = paste(name_town, collapse = ' ')
+
+name_town
+```
+
+* Now we will do it for the entire dataframe:
+
+```{r}
+# creating the auxiliary vectors
+name_town_vector <- vector(length = nrow(bVendors), mode = "character")
+zip_code_vector <- vector(length = nrow(bVendors), mode = "character")
 
 
+for(i in 1:nrow(bVendors)) {
+  location_vector = unlist(strsplit(bVendors$location[i], "\n"))
+  city_and_zip_code = location_vector[1]
+  
+  city_and_zip_code_char <- unlist(strsplit(city_and_zip_code, " "))
+  city_and_zip_code_list = as.vector(city_and_zip_code_char, mode="list") 
+  
+  # get the last index in list
+  last_index = length(city_and_zip_code_list)
+  
+  # get the zip code from list
+  zip_code = city_and_zip_code_list[last_index]
+  
+  # zip_code is a list with one string, so we join them in a string
+  zip_code = paste(zip_code, collapse = '')
+  
+  # remove the zip code of the list
+  city_and_zip_code_list[last_index] <- NULL
+  
+  name_town = city_and_zip_code_list
+  
+  # if the name of town has more than one word, join them
+  name_town = paste(name_town, collapse = ' ')
+  
+  name_town_vector[i] = name_town
+  zip_code_vector[i] = zip_code
+}
 
+```
 
+```{r}
+head(name_town_vector)
+```
 
+```{r}
+head(zip_code_vector)
+```
 
+```{r}
+str(bVendors)
+```
 
+Put the vectors with name of town and zip code in the <tt>bVendors</tt>:
+
+```{r}
+bVendors$name_town <- name_town_vector
+bVendors$zip_code <- zip_code_vector
+
+str(bVendors)
+```
+
+```{r}
+head(subset(bVendors, select = c(name_town, zip_code, location)))
+```
+
+It is all OK.
