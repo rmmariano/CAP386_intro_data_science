@@ -1,0 +1,3 @@
+Instalar e usar pandas.
+
+Refazer a lista 3 em jupyter/python.
