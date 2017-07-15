@@ -98,7 +98,7 @@ print(bVendors.head())
 ## R Exercises
 
 * I want to get all variations of "hot dog", including "frank". 
-With <tt>ignore.case</tt> we will get all cases that match with "hot dog" or "frank" in both cases (lower or upper):
+With <tt>case=False</tt> we will get all cases that match with "hot dog" or "frank" in both cases (lower or upper):
 
 
 ```python
@@ -333,7 +333,7 @@ name_town
 
 
 
-Change the <tt>Location.1</tt> column to <tt>location</tt>: <tt>bVendors</tt>:
+Change the <tt>Location.1</tt> column to <tt>location</tt> from <tt>bVendors</tt>:
 
 
 ```python
