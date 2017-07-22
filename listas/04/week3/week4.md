@@ -9,16 +9,14 @@ Do the necessaries imports:
 
 ```python
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 ```
 
 
 ```python
 from os import makedirs
 from os.path import exists, isfile, getsize
-# import urllib.request as urllib
-from urllib.request import urlretrieve
+# import urllib.request as urllib       # Python 2.7
+from urllib.request import urlretrieve  # Python 3
 ```
 
 If the temporary directory doesn't exist, so make it:
@@ -509,3 +507,5 @@ bVendors[["name_town", "zip_code", "location"]].head()
 
 
 It is all OK.
+
+More information: [10 Minutes to pandas](https://pandas.pydata.org/pandas-docs/stable/10min.html)
