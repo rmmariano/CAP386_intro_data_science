@@ -1,3 +1,7 @@
 aulas
 b
 .Rproj.user
+
+projeto/crimes_baltimore/ignore/*
+
+projeto/crimes_baltimore/files/data/*
