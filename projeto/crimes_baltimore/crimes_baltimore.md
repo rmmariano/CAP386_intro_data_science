@@ -43,18 +43,18 @@ Download the CSV data from https://data.baltimorecity.gov/Public-Safety/BPD-Part
 
 
 ```python
-based_crime_data_csv = "files/data/Based_Crime_Data.csv"
+based_crime_data_data = "files/data/Based_Crime_Data.csv"
 ```
 
 
 ```python
-vendors = "https://data.baltimorecity.gov/api/views/wsfq-mvij/rows.csv?accessType=DOWNLOAD"
+based_crime_data_csv = "https://data.baltimorecity.gov/api/views/wsfq-mvij/rows.csv?accessType=DOWNLOAD"
 
 # download the file
-# urlretrieve(vendors, based_crime_data_csv)
+# urlretrieve(based_crime_data_csv, based_crime_data_csv)
 
-if isfile(based_crime_data_csv):
-    tam = getsize(based_crime_data_csv)
+if isfile(based_crime_data_data):
+    tam = getsize(based_crime_data_data)
     print("File downloaded, ", tam, " bytes.")
 else:
     print("Error downloading file!")
@@ -78,26 +78,35 @@ shape_file_zip = "https://data.baltimorecity.gov/api/views/feax-3ycj/files/hMHrt
 # urlretrieve(shape_file_zip, shape_file_data)
 
 if isfile(shape_file_data):
-    tam = getsize(based_crime_data_csv)
+    tam = getsize(shape_file_data)
     print("File downloaded, ", tam, " bytes.")
 else:
     print("Error downloading file!")
 ```
 
-    File downloaded,  40538138  bytes.
+    File downloaded,  3709817  bytes.
 
 
 The projection of the points in dataframe is WGS84 (EPSG:4326) and the shapefile of Baltimore I have no idea... So I used the QGIS to reproject the shapefile to WGS84 (EPSG:4326)
 
-# Read the CSV data
+# Read the ShapeFile and CSV data
+
+Load the shapefile to use it in the future:
+
+
+```python
+shape_file_path = "files/shp/landuse_4326/landuse_4326.shp"  
+
+shape_file = shp.Reader(shape_file_path)
+```
 
 Read the CSV keeping the same header and change the Location.1 column to location from df_crimes:
 
 
 ```python
-df_crimes = pd.read_csv(based_crime_data_csv)
+df_crimes = pd.read_csv(based_crime_data_data)
 
-df_crimes = df_crimes.rename(columns={"Location 1": "Location"})
+df_crimes = df_crimes.rename(columns={"Location 1": "Lat_Long"})
 
 df_crimes.head()
 ```
@@ -135,7 +144,7 @@ df_crimes.head()
       <th>Neighborhood</th>
       <th>Longitude</th>
       <th>Latitude</th>
-      <th>Location</th>
+      <th>Lat_Long</th>
       <th>Premise</th>
       <th>Total Incidents</th>
     </tr>
@@ -356,7 +365,7 @@ df_crimes.info()
     Neighborhood       269553 non-null object
     Longitude          270081 non-null float64
     Latitude           270081 non-null float64
-    Location           270081 non-null object
+    Lat_Long           270081 non-null object
     Premise            262189 non-null object
     Total Incidents    272252 non-null int64
     dtypes: float64(3), int64(1), object(11)
@@ -414,7 +423,7 @@ df_crimes_cp.head()
       <th>Neighborhood</th>
       <th>Longitude</th>
       <th>Latitude</th>
-      <th>Location</th>
+      <th>Lat_Long</th>
       <th>Premise</th>
       <th>Total Incidents</th>
       <th>CrimeDateTime</th>
@@ -562,7 +571,6 @@ df_crimes_cp.head()
       <th>CrimeTime</th>
       <th>CrimeCode</th>
       <th>Location</th>
-      <th>Location</th>
       <th>Description</th>
       <th>Inside/Outside</th>
       <th>Weapon</th>
@@ -571,8 +579,7 @@ df_crimes_cp.head()
       <th>Neighborhood</th>
       <th>Longitude</th>
       <th>Latitude</th>
-      <th>Location</th>
-      <th>Location</th>
+      <th>Lat_Long</th>
       <th>Premise</th>
       <th>Total Incidents</th>
     </tr>
@@ -585,7 +592,6 @@ df_crimes_cp.head()
       <td>23:00:00</td>
       <td>6D</td>
       <td>PARK DR &amp; LIBERTY HEIGHTS AV</td>
-      <td>(39.3218300000, -76.6638800000)</td>
       <td>LARCENY FROM AUTO</td>
       <td>O</td>
       <td>NaN</td>
@@ -594,7 +600,6 @@ df_crimes_cp.head()
       <td>Burleith-Leighton</td>
       <td>-76.66388</td>
       <td>39.32183</td>
-      <td>PARK DR &amp; LIBERTY HEIGHTS AV</td>
       <td>(39.3218300000, -76.6638800000)</td>
       <td>STREET</td>
       <td>1</td>
@@ -606,7 +611,6 @@ df_crimes_cp.head()
       <td>23:00:00</td>
       <td>4E</td>
       <td>2100 WESTWOOD AVE</td>
-      <td>(39.3086200000, -76.6519100000)</td>
       <td>COMMON ASSAULT</td>
       <td>O</td>
       <td>HANDS</td>
@@ -615,7 +619,6 @@ df_crimes_cp.head()
       <td>Easterwood</td>
       <td>-76.65191</td>
       <td>39.30862</td>
-      <td>2100 WESTWOOD AVE</td>
       <td>(39.3086200000, -76.6519100000)</td>
       <td>STREET</td>
       <td>1</td>
@@ -627,7 +630,6 @@ df_crimes_cp.head()
       <td>21:57:00</td>
       <td>1F</td>
       <td>1600 GERTRUDE ST</td>
-      <td>(39.3060500000, -76.6645600000)</td>
       <td>HOMICIDE</td>
       <td>Outside</td>
       <td>FIREARM</td>
@@ -636,7 +638,6 @@ df_crimes_cp.head()
       <td>Northwest Community Actio</td>
       <td>-76.66456</td>
       <td>39.30605</td>
-      <td>1600 GERTRUDE ST</td>
       <td>(39.3060500000, -76.6645600000)</td>
       <td>Street</td>
       <td>1</td>
@@ -648,7 +649,6 @@ df_crimes_cp.head()
       <td>21:00:00</td>
       <td>4E</td>
       <td>1300 PENNSYLVANIA AVE</td>
-      <td>(39.3003900000, -76.6308000000)</td>
       <td>COMMON ASSAULT</td>
       <td>I</td>
       <td>HANDS</td>
@@ -657,7 +657,6 @@ df_crimes_cp.head()
       <td>Upton</td>
       <td>-76.63080</td>
       <td>39.30039</td>
-      <td>1300 PENNSYLVANIA AVE</td>
       <td>(39.3003900000, -76.6308000000)</td>
       <td>APT/CONDO</td>
       <td>1</td>
@@ -669,7 +668,6 @@ df_crimes_cp.head()
       <td>20:44:00</td>
       <td>6C</td>
       <td>3600 W CATON AVE</td>
-      <td>(39.2883300000, -76.6766900000)</td>
       <td>LARCENY</td>
       <td>I</td>
       <td>NaN</td>
@@ -678,7 +676,6 @@ df_crimes_cp.head()
       <td>Allendale</td>
       <td>-76.67669</td>
       <td>39.28833</td>
-      <td>3600 W CATON AVE</td>
       <td>(39.2883300000, -76.6766900000)</td>
       <td>GROCERY/CO</td>
       <td>1</td>
@@ -689,85 +686,636 @@ df_crimes_cp.head()
 
 
 
+# Create a function to plot the shapefile with the points of crimes
+
+
+```python
+def plot_shapefile_and_points(shape_file, df_crimes, title_of_plot):
+
+    # settings of the plot
+    plt.figure(figsize=(15,10))  # image size
+    plt.axis([-76.725, -76.52, 39.19, 39.38])  # axis
+    plt.title(title_of_plot)
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    
+
+    # put the shapefile on plot
+    for shape in shape_file.shapeRecords():
+        x = [i[0] for i in shape.shape.points[:]]
+        y = [i[1] for i in shape.shape.points[:]]
+        plt.plot(x, y, 'b')  # b - blue
+
+    # Get the x (Longitude) and y (Latitude) values
+    # Put the points of crimes on plot
+    x = np.array(list(df_crimes["Longitude"]))
+    y = np.array(list(df_crimes["Latitude"]))
+    plt.plot(x, y, 'ro')  # r - red , o - circle
+
+
+    # show the plot
+    plt.show()
+```
+
+# Example 1: All crimes in Baltimore on a date
+
 Get all crimes on the following date:
 
 
 ```python
-date = datetime(2017, 8, 5)
+date = datetime(2016, 12, 25)
 
-df_crimes_in_date = df_crimes_cp[df_crimes_cp.CrimeDateTime == date]
+df_crimes_query = df_crimes_cp[df_crimes_cp.CrimeDateTime == date]
 
-df_crimes_in_date.info()
+df_crimes_query.info()
 ```
 
     <class 'pandas.core.frame.DataFrame'>
-    Int64Index: 83 entries, 0 to 83
-    Data columns (total 18 columns):
-    CrimeDateTime      83 non-null datetime64[ns]
-    CrimeDate          83 non-null object
-    CrimeTime          83 non-null object
-    CrimeCode          83 non-null object
-    Location           83 non-null object
-    Location           83 non-null object
-    Description        83 non-null object
-    Inside/Outside     75 non-null object
-    Weapon             41 non-null object
-    Post               83 non-null float64
-    District           83 non-null object
-    Neighborhood       83 non-null object
-    Longitude          83 non-null float64
-    Latitude           83 non-null float64
-    Location           83 non-null object
-    Location           83 non-null object
-    Premise            75 non-null object
-    Total Incidents    83 non-null int64
-    dtypes: datetime64[ns](1), float64(3), int64(1), object(13)
-    memory usage: 12.3+ KB
+    Int64Index: 112 entries, 30381 to 30492
+    Data columns (total 16 columns):
+    CrimeDateTime      112 non-null datetime64[ns]
+    CrimeDate          112 non-null object
+    CrimeTime          112 non-null object
+    CrimeCode          112 non-null object
+    Location           111 non-null object
+    Description        112 non-null object
+    Inside/Outside     112 non-null object
+    Weapon             48 non-null object
+    Post               112 non-null float64
+    District           112 non-null object
+    Neighborhood       111 non-null object
+    Longitude          111 non-null float64
+    Latitude           111 non-null float64
+    Lat_Long           111 non-null object
+    Premise            112 non-null object
+    Total Incidents    112 non-null int64
+    dtypes: datetime64[ns](1), float64(3), int64(1), object(11)
+    memory usage: 14.9+ KB
 
-
-# Plot the data
-
-We will plot the shapefile of Baltimore. First load the shapefile:
 
 
 ```python
-shpFilePath = "/media/rodrigo/blue_white/f/INPE/mestrado/2017/p2/intro_data_science/projeto/crimes_baltimore/files/shp/landuse_4326/landuse_4326.shp"  
-
-sf = shp.Reader(shpFilePath)
+df_crimes_query.head()
 ```
+
+
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CrimeDateTime</th>
+      <th>CrimeDate</th>
+      <th>CrimeTime</th>
+      <th>CrimeCode</th>
+      <th>Location</th>
+      <th>Description</th>
+      <th>Inside/Outside</th>
+      <th>Weapon</th>
+      <th>Post</th>
+      <th>District</th>
+      <th>Neighborhood</th>
+      <th>Longitude</th>
+      <th>Latitude</th>
+      <th>Lat_Long</th>
+      <th>Premise</th>
+      <th>Total Incidents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>30381</th>
+      <td>2016-12-25</td>
+      <td>12/25/2016</td>
+      <td>23:53:00</td>
+      <td>7A</td>
+      <td>2400 ORLEANS ST</td>
+      <td>AUTO THEFT</td>
+      <td>O</td>
+      <td>NaN</td>
+      <td>221.0</td>
+      <td>SOUTHEASTERN</td>
+      <td>McElderry Park</td>
+      <td>-76.58301</td>
+      <td>39.29562</td>
+      <td>(39.2956200000, -76.5830100000)</td>
+      <td>STREET</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>30382</th>
+      <td>2016-12-25</td>
+      <td>12/25/2016</td>
+      <td>23:15:00</td>
+      <td>4D</td>
+      <td>1200 SARGEANT ST</td>
+      <td>AGG. ASSAULT</td>
+      <td>I</td>
+      <td>HANDS</td>
+      <td>932.0</td>
+      <td>SOUTHERN</td>
+      <td>Washington Village/Pigtow</td>
+      <td>-76.63494</td>
+      <td>39.28179</td>
+      <td>(39.2817900000, -76.6349400000)</td>
+      <td>ROW/TOWNHO</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>30383</th>
+      <td>2016-12-25</td>
+      <td>12/25/2016</td>
+      <td>22:42:00</td>
+      <td>4E</td>
+      <td>1000 SAINT PAUL ST</td>
+      <td>COMMON ASSAULT</td>
+      <td>I</td>
+      <td>HANDS</td>
+      <td>141.0</td>
+      <td>CENTRAL</td>
+      <td>Mid-Town Belvedere</td>
+      <td>-76.61436</td>
+      <td>39.30171</td>
+      <td>(39.3017100000, -76.6143600000)</td>
+      <td>APT/CONDO</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>30384</th>
+      <td>2016-12-25</td>
+      <td>12/25/2016</td>
+      <td>22:32:00</td>
+      <td>3AF</td>
+      <td>2400 GREENMOUNT AVE</td>
+      <td>ROBBERY - STREET</td>
+      <td>O</td>
+      <td>FIREARM</td>
+      <td>341.0</td>
+      <td>EASTERN</td>
+      <td>Barclay</td>
+      <td>-76.60950</td>
+      <td>39.31673</td>
+      <td>(39.3167300000, -76.6095000000)</td>
+      <td>STREET</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>30385</th>
+      <td>2016-12-25</td>
+      <td>12/25/2016</td>
+      <td>22:00:00</td>
+      <td>3CF</td>
+      <td>3100 MCELDERRY ST</td>
+      <td>ROBBERY - COMMERCIAL</td>
+      <td>I</td>
+      <td>FIREARM</td>
+      <td>224.0</td>
+      <td>SOUTHEASTERN</td>
+      <td>Ellwood Park/Monument</td>
+      <td>-76.57275</td>
+      <td>39.29809</td>
+      <td>(39.2980900000, -76.5727500000)</td>
+      <td>CONVENIENC</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+## Plot the data
 
 Plot the shapefile with the point of crimes:
 
 
 ```python
-# settings of the plot
-plt.figure(figsize=(15,10))  # image size
-plt.axis([-76.725, -76.52, 39.19, 39.38])  # axis
-plt.title('Crimes in Baltimore on ' + str(date.date().strftime("%d/%m/%Y")))
-plt.xlabel('Longitude')
-plt.ylabel('Latitude')
+title_of_plot = 'Crimes in Baltimore on ' + str(date.date().strftime("%d/%m/%Y"))
 
-
-# put the shapefile on plot
-for shape in sf.shapeRecords():
-    x = [i[0] for i in shape.shape.points[:]]
-    y = [i[1] for i in shape.shape.points[:]]
-    plt.plot(x, y, 'b')  # b - blue
-
-# Get the x (Longitude) and y (Latitude) values
-# Put the points of crimes on plot
-x = np.array(list(df_crimes_in_date["Longitude"]))
-y = np.array(list(df_crimes_in_date["Latitude"]))
-plt.plot(x, y, 'ro')  # r - red , o - circle
-
-
-# save and show the plot
-# plt.savefig('baltimore_4326.png')
-plt.show()
+plot_shapefile_and_points(shape_file, df_crimes_query, title_of_plot)
 ```
 
 
-![png](output_34_0.png)
+![png](output_38_0.png)
+
+
+# Example 2: All assaults in Baltimore on a date
+
+
+```python
+date = datetime(2017, 3, 25)
+type_of_crime = "assault"
+
+type_of_crime_regex = "(?i)" + type_of_crime  # (?i) - ignore case
+
+# na=False - ignore NA values
+df_crimes_query = df_crimes_cp[(df_crimes_cp.CrimeDateTime == date) & 
+                               (df_crimes_cp['Description'].str.contains(type_of_crime_regex, na=False))]
+
+df_crimes_query.info()
+```
+
+    <class 'pandas.core.frame.DataFrame'>
+    Int64Index: 48 entries, 18622 to 18744
+    Data columns (total 16 columns):
+    CrimeDateTime      48 non-null datetime64[ns]
+    CrimeDate          48 non-null object
+    CrimeTime          48 non-null object
+    CrimeCode          48 non-null object
+    Location           48 non-null object
+    Description        48 non-null object
+    Inside/Outside     35 non-null object
+    Weapon             47 non-null object
+    Post               48 non-null float64
+    District           48 non-null object
+    Neighborhood       48 non-null object
+    Longitude          48 non-null float64
+    Latitude           48 non-null float64
+    Lat_Long           48 non-null object
+    Premise            35 non-null object
+    Total Incidents    48 non-null int64
+    dtypes: datetime64[ns](1), float64(3), int64(1), object(11)
+    memory usage: 6.4+ KB
+
+
+
+```python
+df_crimes_query.head()
+```
+
+
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CrimeDateTime</th>
+      <th>CrimeDate</th>
+      <th>CrimeTime</th>
+      <th>CrimeCode</th>
+      <th>Location</th>
+      <th>Description</th>
+      <th>Inside/Outside</th>
+      <th>Weapon</th>
+      <th>Post</th>
+      <th>District</th>
+      <th>Neighborhood</th>
+      <th>Longitude</th>
+      <th>Latitude</th>
+      <th>Lat_Long</th>
+      <th>Premise</th>
+      <th>Total Incidents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>18622</th>
+      <td>2017-03-25</td>
+      <td>03/25/2017</td>
+      <td>23:30:00</td>
+      <td>4E</td>
+      <td>2400 BARCLAY ST</td>
+      <td>COMMON ASSAULT</td>
+      <td>I</td>
+      <td>HANDS</td>
+      <td>341.0</td>
+      <td>EASTERN</td>
+      <td>Barclay</td>
+      <td>-76.61133</td>
+      <td>39.31689</td>
+      <td>(39.3168900000, -76.6113300000)</td>
+      <td>ROW/TOWNHO</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>18626</th>
+      <td>2017-03-25</td>
+      <td>03/25/2017</td>
+      <td>22:17:00</td>
+      <td>4E</td>
+      <td>3400 JUNEWAY</td>
+      <td>COMMON ASSAULT</td>
+      <td>I</td>
+      <td>HANDS</td>
+      <td>432.0</td>
+      <td>NORTHEASTERN</td>
+      <td>Belair-Edison</td>
+      <td>-76.56817</td>
+      <td>39.31812</td>
+      <td>(39.3181200000, -76.5681700000)</td>
+      <td>ROW/TOWNHO</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>18629</th>
+      <td>2017-03-25</td>
+      <td>03/25/2017</td>
+      <td>21:30:00</td>
+      <td>4E</td>
+      <td>3200 RAVENWOOD AVE</td>
+      <td>COMMON ASSAULT</td>
+      <td>I</td>
+      <td>HANDS</td>
+      <td>434.0</td>
+      <td>NORTHEASTERN</td>
+      <td>Four By Four</td>
+      <td>-76.57808</td>
+      <td>39.31533</td>
+      <td>(39.3153300000, -76.5780800000)</td>
+      <td>ROW/TOWNHO</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>18633</th>
+      <td>2017-03-25</td>
+      <td>03/25/2017</td>
+      <td>21:30:00</td>
+      <td>4C</td>
+      <td>REGESTER ST &amp; E PRATT ST</td>
+      <td>AGG. ASSAULT</td>
+      <td>O</td>
+      <td>OTHER</td>
+      <td>212.0</td>
+      <td>SOUTHEASTERN</td>
+      <td>Upper Fells Point</td>
+      <td>-76.59248</td>
+      <td>39.28929</td>
+      <td>(39.2892900000, -76.5924800000)</td>
+      <td>STREET</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>18637</th>
+      <td>2017-03-25</td>
+      <td>03/25/2017</td>
+      <td>21:00:00</td>
+      <td>4E</td>
+      <td>900 SAINT PAUL ST</td>
+      <td>COMMON ASSAULT</td>
+      <td>O</td>
+      <td>HANDS</td>
+      <td>142.0</td>
+      <td>CENTRAL</td>
+      <td>Mount Vernon</td>
+      <td>-76.61424</td>
+      <td>39.29985</td>
+      <td>(39.2998500000, -76.6142400000)</td>
+      <td>STREET</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+## Plot the data
+
+Plot the shapefile with the point of crimes:
+
+
+```python
+title_of_plot = type_of_crime.capitalize() + ' in Baltimore on ' + str(date.date().strftime("%d/%m/%Y"))
+
+plot_shapefile_and_points(shape_file, df_crimes_query, title_of_plot)
+```
+
+
+![png](output_44_0.png)
+
+
+# Example 3: All crimes in Saint Paul in Baltimore on a range of date
+
+
+```python
+date_start = datetime(2017, 5, 13)
+date_end = datetime(2017, 8, 15)
+
+location = "SAINT PAUL"
+location_regex = "(?i)" + location  # (?i) - ignore case
+
+# na=False - ignore NA values
+df_crimes_query = df_crimes_cp[
+                                (df_crimes_cp.CrimeDateTime >= date_start) & 
+                                (df_crimes_cp.CrimeDateTime <= date_end) &
+                                (df_crimes_cp['Location'].str.contains(location_regex, na=False))
+                               ]
+
+df_crimes_query.info()
+```
+
+    <class 'pandas.core.frame.DataFrame'>
+    Int64Index: 62 entries, 150 to 11635
+    Data columns (total 16 columns):
+    CrimeDateTime      62 non-null datetime64[ns]
+    CrimeDate          62 non-null object
+    CrimeTime          62 non-null object
+    CrimeCode          62 non-null object
+    Location           62 non-null object
+    Description        62 non-null object
+    Inside/Outside     52 non-null object
+    Weapon             19 non-null object
+    Post               62 non-null float64
+    District           62 non-null object
+    Neighborhood       62 non-null object
+    Longitude          62 non-null float64
+    Latitude           62 non-null float64
+    Lat_Long           62 non-null object
+    Premise            52 non-null object
+    Total Incidents    62 non-null int64
+    dtypes: datetime64[ns](1), float64(3), int64(1), object(11)
+    memory usage: 8.2+ KB
+
+
+
+```python
+df_crimes_query.head()
+```
+
+
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CrimeDateTime</th>
+      <th>CrimeDate</th>
+      <th>CrimeTime</th>
+      <th>CrimeCode</th>
+      <th>Location</th>
+      <th>Description</th>
+      <th>Inside/Outside</th>
+      <th>Weapon</th>
+      <th>Post</th>
+      <th>District</th>
+      <th>Neighborhood</th>
+      <th>Longitude</th>
+      <th>Latitude</th>
+      <th>Lat_Long</th>
+      <th>Premise</th>
+      <th>Total Incidents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>150</th>
+      <td>2017-08-04</td>
+      <td>08/04/2017</td>
+      <td>11:29:00</td>
+      <td>6F</td>
+      <td>3500 SAINT PAUL ST</td>
+      <td>LARCENY</td>
+      <td>O</td>
+      <td>NaN</td>
+      <td>512.0</td>
+      <td>NORTHERN</td>
+      <td>Charles Village</td>
+      <td>-76.61604</td>
+      <td>39.33005</td>
+      <td>(39.3300500000, -76.6160400000)</td>
+      <td>STREET</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>197</th>
+      <td>2017-08-03</td>
+      <td>08/03/2017</td>
+      <td>22:30:00</td>
+      <td>4A</td>
+      <td>300 SAINT PAUL ST</td>
+      <td>AGG. ASSAULT</td>
+      <td>NaN</td>
+      <td>FIREARM</td>
+      <td>111.0</td>
+      <td>CENTRAL</td>
+      <td>Downtown</td>
+      <td>-76.61350</td>
+      <td>39.29254</td>
+      <td>(39.2925400000, -76.6135000000)</td>
+      <td>NaN</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>234</th>
+      <td>2017-08-03</td>
+      <td>08/03/2017</td>
+      <td>17:44:00</td>
+      <td>6G</td>
+      <td>3500 SAINT PAUL ST</td>
+      <td>LARCENY</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>512.0</td>
+      <td>NORTHERN</td>
+      <td>Charles Village</td>
+      <td>-76.61604</td>
+      <td>39.33005</td>
+      <td>(39.3300500000, -76.6160400000)</td>
+      <td>NaN</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>386</th>
+      <td>2017-08-02</td>
+      <td>08/02/2017</td>
+      <td>15:00:00</td>
+      <td>3AK</td>
+      <td>300 SAINT PAUL ST</td>
+      <td>ROBBERY - STREET</td>
+      <td>O</td>
+      <td>KNIFE</td>
+      <td>111.0</td>
+      <td>CENTRAL</td>
+      <td>Downtown</td>
+      <td>-76.61350</td>
+      <td>39.29254</td>
+      <td>(39.2925400000, -76.6135000000)</td>
+      <td>STREET</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>506</th>
+      <td>2017-08-01</td>
+      <td>08/01/2017</td>
+      <td>16:20:00</td>
+      <td>6D</td>
+      <td>3300 SAINT PAUL ST</td>
+      <td>LARCENY FROM AUTO</td>
+      <td>O</td>
+      <td>NaN</td>
+      <td>512.0</td>
+      <td>NORTHERN</td>
+      <td>Charles Village</td>
+      <td>-76.61612</td>
+      <td>39.32822</td>
+      <td>(39.3282200000, -76.6161200000)</td>
+      <td>STREET</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+## Plot the data
+
+Plot the shapefile with the point of crimes:
+
+
+```python
+title_of_plot = 'Crimes in ' + location.title() + ' in Baltimore between ' + str(date_start.date().strftime("%d/%m/%Y")) + ' and ' + str(date_end.date().strftime("%d/%m/%Y"))
+
+plot_shapefile_and_points(shape_file, df_crimes_query, title_of_plot)
+```
+
+
+![png](output_50_0.png)
 
 
 More information about Pandas: https://pandas.pydata.org/pandas-docs/stable/10min.html
