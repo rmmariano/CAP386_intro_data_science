@@ -1320,6 +1320,243 @@ plot_shapefile_and_points(shape_file, df_crimes_query, title_of_plot)
 
 More information about Pandas: https://pandas.pydata.org/pandas-docs/stable/10min.html
 
+# Testing GeoPandas
+
+Crimes data: https://data.baltimorecity.gov/Public-Safety/BPD-Part-1-Victim-Based-Crime-Data/wsfq-mvij
+
+ShapeFile: https://data.baltimorecity.gov/Geographic/Land-use-Shape/feax-3ycj
+
+Trying to reproject the shapefile using geopandas:
+
+
+```python
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+shape_file_path = "files/shp/landuse/landuse.shp"  
+
+shape_file_data = gpd.read_file(shape_file_path)
+
+shape_file_data.crs
+```
+
+
+
+
+    {'datum': 'NAD83',
+     'lat_0': 37.66666666666666,
+     'lat_1': 38.3,
+     'lat_2': 39.45,
+     'lon_0': -77,
+     'no_defs': True,
+     'proj': 'lcc',
+     'units': 'us-ft',
+     'x_0': 399999.9999999999,
+     'y_0': 0}
+
+
+
+
+```python
+shape_file_data['geometry'] = shape_file_data['geometry'].to_crs(epsg=4326)
+```
+
+
+    ---------------------------------------------------------------------------
+
+    AttributeError                            Traceback (most recent call last)
+
+    <ipython-input-217-2ea514a2a0b1> in <module>()
+    ----> 1 shape_file_data['geometry'] = shape_file_data['geometry'].to_crs(epsg=4326)
+    
+
+    /usr/local/lib/python3.5/dist-packages/geopandas/geoseries.py in to_crs(self, crs, epsg)
+        276         proj_out = pyproj.Proj(crs, preserve_units=True)
+        277         project = partial(pyproj.transform, proj_in, proj_out)
+    --> 278         result = self.apply(lambda geom: transform(project, geom))
+        279         result.__class__ = GeoSeries
+        280         result.crs = crs
+
+
+    /usr/local/lib/python3.5/dist-packages/pandas/core/series.py in apply(self, func, convert_dtype, args, **kwds)
+       2353             else:
+       2354                 values = self.asobject
+    -> 2355                 mapped = lib.map_infer(values, f, convert=convert_dtype)
+       2356 
+       2357         if len(mapped) and isinstance(mapped[0], Series):
+
+
+    pandas/_libs/src/inference.pyx in pandas._libs.lib.map_infer (pandas/_libs/lib.c:66645)()
+
+
+    /usr/local/lib/python3.5/dist-packages/geopandas/geoseries.py in <lambda>(geom)
+        276         proj_out = pyproj.Proj(crs, preserve_units=True)
+        277         project = partial(pyproj.transform, proj_in, proj_out)
+    --> 278         result = self.apply(lambda geom: transform(project, geom))
+        279         result.__class__ = GeoSeries
+        280         result.crs = crs
+
+
+    ~/.local/lib/python3.5/site-packages/shapely/ops.py in transform(func, geom)
+        218     also satisfy the requirements for `func`.
+        219     """
+    --> 220     if geom.is_empty:
+        221         return geom
+        222     if geom.type in ('Point', 'LineString', 'LinearRing', 'Polygon'):
+
+
+    AttributeError: 'NoneType' object has no attribute 'is_empty'
+
+
+
+```python
+shape_file_data['geometry'] = shape_file_data['geometry'].to_crs({'init': 'epsg:4326'})
+```
+
+
+    ---------------------------------------------------------------------------
+
+    AttributeError                            Traceback (most recent call last)
+
+    <ipython-input-218-006d06dfccb5> in <module>()
+    ----> 1 shape_file_data['geometry'] = shape_file_data['geometry'].to_crs({'init': 'epsg:4326'})
+    
+
+    /usr/local/lib/python3.5/dist-packages/geopandas/geoseries.py in to_crs(self, crs, epsg)
+        276         proj_out = pyproj.Proj(crs, preserve_units=True)
+        277         project = partial(pyproj.transform, proj_in, proj_out)
+    --> 278         result = self.apply(lambda geom: transform(project, geom))
+        279         result.__class__ = GeoSeries
+        280         result.crs = crs
+
+
+    /usr/local/lib/python3.5/dist-packages/pandas/core/series.py in apply(self, func, convert_dtype, args, **kwds)
+       2353             else:
+       2354                 values = self.asobject
+    -> 2355                 mapped = lib.map_infer(values, f, convert=convert_dtype)
+       2356 
+       2357         if len(mapped) and isinstance(mapped[0], Series):
+
+
+    pandas/_libs/src/inference.pyx in pandas._libs.lib.map_infer (pandas/_libs/lib.c:66645)()
+
+
+    /usr/local/lib/python3.5/dist-packages/geopandas/geoseries.py in <lambda>(geom)
+        276         proj_out = pyproj.Proj(crs, preserve_units=True)
+        277         project = partial(pyproj.transform, proj_in, proj_out)
+    --> 278         result = self.apply(lambda geom: transform(project, geom))
+        279         result.__class__ = GeoSeries
+        280         result.crs = crs
+
+
+    ~/.local/lib/python3.5/site-packages/shapely/ops.py in transform(func, geom)
+        218     also satisfy the requirements for `func`.
+        219     """
+    --> 220     if geom.is_empty:
+        221         return geom
+        222     if geom.type in ('Point', 'LineString', 'LinearRing', 'Polygon'):
+
+
+    AttributeError: 'NoneType' object has no attribute 'is_empty'
+
+
+## How it has not worked, I have reprojected the shapefile to EPSG:4326 using QGIS.    
+
+
+```python
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+shape_file_path = "files/shp/landuse_4326/landuse_4326.shp"  
+
+shape_file_data = gpd.read_file(shape_file_path)
+
+shape_file_data.crs
+```
+
+
+
+
+    {'init': 'epsg:4326'}
+
+
+
+
+```python
+shape_file_data['geometry'].head()
+```
+
+
+
+
+    0    POLYGON ((-76.63202678843903 39.32761753657134...
+    1    POLYGON ((-76.6002548745586 39.32244777330502,...
+    2    POLYGON ((-76.59451222737226 39.32068341521047...
+    3    POLYGON ((-76.65339222090071 39.33261332482496...
+    4    POLYGON ((-76.53693066711821 39.36853839332729...
+    Name: geometry, dtype: object
+
+
+
+Trying to plot the shapefile:
+
+
+```python
+shape_file_data.plot(markersize=6, color="red");
+
+plt.title("WGS84 projection");
+```
+
+
+    ---------------------------------------------------------------------------
+
+    AttributeError                            Traceback (most recent call last)
+
+    <ipython-input-221-4da5f2c5834e> in <module>()
+    ----> 1 shape_file_data.plot(markersize=6, color="red");
+          2 
+          3 plt.title("WGS84 projection");
+
+
+    /usr/local/lib/python3.5/dist-packages/geopandas/geodataframe.py in plot(self, *args, **kwargs)
+        445     def plot(self, *args, **kwargs):
+        446 
+    --> 447         return plot_dataframe(self, *args, **kwargs)
+        448 
+        449     plot.__doc__ = plot_dataframe.__doc__
+
+
+    /usr/local/lib/python3.5/dist-packages/geopandas/plotting.py in plot_dataframe(s, column, cmap, color, linewidth, categorical, legend, ax, scheme, k, vmin, vmax, figsize, **color_kwds)
+        238         return plot_series(s.geometry, cmap=cmap, color=color,
+        239                            ax=ax, linewidth=linewidth, figsize=figsize,
+    --> 240                            **color_kwds)
+        241     else:
+        242         if s[column].dtype is np.dtype('O'):
+
+
+    /usr/local/lib/python3.5/dist-packages/geopandas/plotting.py in plot_series(s, cmap, color, ax, linewidth, figsize, **color_kwds)
+        137         else:
+        138             col = color
+    --> 139         if geom.type == 'Polygon' or geom.type == 'MultiPolygon':
+        140             if 'facecolor' in color_kwds:
+        141                 plot_multipolygon(ax, geom, linewidth=linewidth, **color_kwds)
+
+
+    AttributeError: 'NoneType' object has no attribute 'type'
+
+
+
+![png](output_62_1.png)
+
+
+Well, it has worked but has raised an exception...
+
+Sources:
+
+http://geopandas.org/projections.html
+
+https://automating-gis-processes.github.io/2016/Lesson3-projections.html
+
 
 ```python
 
